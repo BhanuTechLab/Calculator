@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Modern Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      user-select: none;
+    }
+    
+    body {
+      background: linear-gradient(145deg, #111827, #0f172a, #1e293b);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+    
+    .calc {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      width: 340px;
+      padding: 20px;
+    }
+    
+    .display {
+      height: 80px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 14px;
+      font-size: 2rem;
+      overflow-x: auto;
+    }
+    
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    
+    button {
+      font-size: 1.3rem;
+      border: none;
+      outline: none;
+      border-radius: 14px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.15s ease;
+    }
+    
+    button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .op {
+      background: linear-gradient(135deg, #10b981, #14b8a6);
+      color: #042018;
+      font-weight: 600;
+    }
+    
+    .op:hover {
+      background: linear-gradient(135deg, #34d399, #2dd4bf);
+    }
+    
+    .equal {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      font-weight: 700;
+    }
+    
+    .equal:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+    
+    .clear {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: white;
+      font-weight: 700;
+    }
+    
+    .wide {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="calc">
+    <div id="display" class="display">0</div>
+    <div class="keys">
+      <button class="clear">C</button>
+      <button id="back">⌫</button>
+      <button class="op" data-val="%">%</button>
+      <button class="op" data-val="/">÷</button>
+      
+      <button data-val="7">7</button>
+      <button data-val="8">8</button>
+      <button data-val="9">9</button>
+      <button class="op" data-val="*">×</button>
+      
+      <button data-val="4">4</button>
+      <button data-val="5">5</button>
+      <button data-val="6">6</button>
+      <button class="op" data-val="-">−</button>
+      
+      <button data-val="1">1</button>
+      <button data-val="2">2</button>
+      <button data-val="3">3</button>
+      <button class="op" data-val="+">+</button>
+      
+      <button class="wide" data-val="0">0</button>
+      <button data-val=".">.</button>
+      <button class="equal">=</button>
+    </div>
+  </div>
+  
+  <script>
+    const display = document.getElementById("display");
+    let expr = "";
+    
+    function updateDisplay() {
+      display.textContent = expr || "0";
+    }
+    
+    function safeEval(expression) {
+      // sanitize allowed characters
+      if (!/^[0-9+\-*/%.() ]*$/.test(expression)) throw Error("Invalid");
+      return Function(`"use strict";return (${expression})`)();
+    }
+    
+    document.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = btn.dataset.val;
+        if (v) {
+          expr += v;
+          updateDisplay();
+        } else if (btn.classList.contains("clear")) {
+          expr = "";
+          updateDisplay();
+        } else if (btn.classList.contains("equal")) {
+          try {
+            const res = safeEval(expr);
+            expr = String(res);
+            updateDisplay();
+          } catch (e) {
+            display.textContent = "Error";
+            setTimeout(() => { expr = "";
+              updateDisplay(); }, 800);
+          }
+        } else if (btn.id === "back") {
+          expr = expr.slice(0, -1);
+          updateDisplay();
+        }
+      });
+    });
+    
+    window.addEventListener("keydown", (e) => {
+      const k = e.key;
+      if (/^[0-9+\-*/%.()]$/.test(k)) { expr += k;
+        updateDisplay(); }
+      if (k === "Enter") { document.querySelector(".equal").click(); }
+      if (k === "Backspace") { expr = expr.slice(0, -1);
+        updateDisplay(); }
+      if (k === "Escape") { expr = "";
+        updateDisplay(); }
+    });
+  </script>
+</body>
+
+</html>
